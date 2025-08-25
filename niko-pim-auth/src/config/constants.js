@@ -1,4 +1,4 @@
-
+// SECURE Configuration - Credentials injected at runtime
 export const CONFIG = {
   SUPABASE: {
     URL: 'https://bzjoxjqfpmjhbfijthpp.supabase.co',
@@ -27,3 +27,20 @@ export const USER_ROLES = {
   CUSTOMER: 'Customer',
   RETAILER: 'Retailer'
 };
+
+// Environment validation
+export function validateEnvironment() {
+  const required = [
+    { key: 'SUPABASE_URL', value: CONFIG.SUPABASE.URL },
+    { key: 'SUPABASE_ANON_KEY', value: CONFIG.SUPABASE.ANON_KEY }
+  ];
+  
+  const missing = required.filter(item => !item.value);
+  
+  if (missing.length > 0) {
+    console.error('❌ Missing required configuration:', missing.map(item => item.key));
+    throw new Error(`Missing configuration: ${missing.map(item => item.key).join(', ')}`);
+  }
+  
+  console.log('✅ Environment validation passed');
+}
