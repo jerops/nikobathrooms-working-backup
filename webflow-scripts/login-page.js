@@ -1,5 +1,5 @@
 setTimeout(() => {
-    console.log('🎯 Setting up login handlers with domain detection...');
+    console.log('🎯 Setting up login handlers with email confirmation check...');
     
     // DOMAIN-AWARE REDIRECT FUNCTION
     function getRedirectUrl(userType) {
@@ -15,6 +15,23 @@ setTimeout(() => {
         return userType === 'Customer' 
             ? `${baseUrl}/dev/app/customer/dashboard`
             : `${baseUrl}/dev/app/retailer/dashboard`;
+    }
+    
+    // Show error message with email confirmation hint
+    function showErrorMessage(message) {
+        const errorElement = document.querySelector('.w--tab-active .error-text');
+        if (errorElement) {
+            if (message.includes('Email not confirmed')) {
+                errorElement.innerHTML = `
+                    🔒 <strong>Email not confirmed</strong><br>
+                    📧 Please check your email and click the confirmation link before logging in.<br>
+                    <small>Didn't receive the email? Check your spam folder.</small>
+                `;
+            } else {
+                errorElement.textContent = message;
+            }
+            errorElement.parentElement.parentElement.style.display = 'block';
+        }
     }
     
     // Password toggle setup
@@ -41,7 +58,7 @@ setTimeout(() => {
         }
     });
     
-    // Login button setup with domain-aware redirects
+    // Login button setup with email confirmation check
     const customerLoginBtn = document.getElementById('customer-login-btn');
     if (customerLoginBtn) {
         customerLoginBtn.addEventListener('click', async function(e) {
@@ -56,14 +73,17 @@ setTimeout(() => {
                 console.log('Login result:', result);
                 
                 if (result.success) {
+                    // Only redirect if user is confirmed
                     const redirectUrl = getRedirectUrl('Customer');
                     console.log('🚀 Redirecting to:', redirectUrl);
                     window.location.href = redirectUrl;
                 } else {
                     console.error('Login failed:', result.error);
+                    showErrorMessage(result.error);
                 }
             } catch (error) {
                 console.error('Login error:', error);
+                showErrorMessage('Login failed. Please try again.');
             }
         });
     }
@@ -82,18 +102,21 @@ setTimeout(() => {
                 console.log('Login result:', result);
                 
                 if (result.success) {
+                    // Only redirect if user is confirmed
                     const redirectUrl = getRedirectUrl('Retailer');
                     console.log('🚀 Redirecting to:', redirectUrl);
                     window.location.href = redirectUrl;
                 } else {
                     console.error('Login failed:', result.error);
+                    showErrorMessage(result.error);
                 }
             } catch (error) {
                 console.error('Login error:', error);
+                showErrorMessage('Login failed. Please try again.');
             }
         });
     }
     
-    console.log('✅ Domain-aware login handlers ready');
+    console.log('✅ Domain-aware login handlers with email confirmation check ready');
     
 }, 3000);
