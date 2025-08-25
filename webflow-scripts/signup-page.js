@@ -1,5 +1,5 @@
 setTimeout(() => {
-    console.log('🎯 Setting up signup handlers with domain detection...');
+    console.log('🎯 Setting up signup handlers with email confirmation flow...');
     
     // DOMAIN-AWARE REDIRECT FUNCTION
     function getRedirectUrl(userType) {
@@ -12,12 +12,11 @@ setTimeout(() => {
         console.log('📍 Environment:', isStaging ? 'STAGING' : 'PRODUCTION');
         console.log('🔗 Base URL:', baseUrl);
         
-        return userType === 'Customer' 
-            ? `${baseUrl}/dev/app/customer/dashboard`
-            : `${baseUrl}/dev/app/retailer/dashboard`;
+        // For new signups, redirect to email confirmation page instead of dashboard
+        return `${baseUrl}/dev/app/auth/confirm-email`;
     }
     
-    // Password toggle setup (same as login)
+    // Password toggle setup
     const toggleButtons = document.querySelectorAll('.input-visibility-toggle');
     toggleButtons.forEach(button => {
         const showIcon = button.querySelector('[wized="icon_show_password"]');
@@ -41,7 +40,37 @@ setTimeout(() => {
         }
     });
     
-    // Signup button setup with domain-aware redirects
+    // Show success message function
+    function showSuccessMessage(message) {
+        // Try to find existing success element or create one
+        let successElement = document.querySelector('.success-message');
+        if (!successElement) {
+            successElement = document.createElement('div');
+            successElement.className = 'success-message';
+            successElement.style.cssText = `
+                background: #d4edda;
+                color: #155724;
+                padding: 12px;
+                border-radius: 4px;
+                margin: 10px 0;
+                border: 1px solid #c3e6cb;
+            `;
+            document.querySelector('.w--tab-active').prepend(successElement);
+        }
+        successElement.innerHTML = message;
+        successElement.style.display = 'block';
+    }
+    
+    // Show error message function
+    function showErrorMessage(message) {
+        const errorElement = document.querySelector('.w--tab-active .error-text');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.parentElement.parentElement.style.display = 'block';
+        }
+    }
+    
+    // Signup button setup with email confirmation flow
     const customerSignupBtn = document.getElementById('customer-signup-btn');
     if (customerSignupBtn) {
         customerSignupBtn.addEventListener('click', async function(e) {
@@ -57,14 +86,26 @@ setTimeout(() => {
                 console.log('Signup result:', result);
                 
                 if (result.success) {
-                    const redirectUrl = getRedirectUrl('Customer');
-                    console.log('🚀 Redirecting to:', redirectUrl);
-                    window.location.href = redirectUrl;
+                    // Instead of redirecting to dashboard, show confirmation message
+                    showSuccessMessage(`
+                        ✅ Account created successfully!<br>
+                        📧 Please check your email (<strong>${email}</strong>) and click the confirmation link.<br>
+                        🔒 You'll be able to log in after confirming your email.
+                    `);
+                    
+                    // Optional: Redirect to confirmation page after a delay
+                    setTimeout(() => {
+                        const redirectUrl = getRedirectUrl('Customer');
+                        console.log('🚀 Redirecting to confirmation page:', redirectUrl);
+                        window.location.href = redirectUrl;
+                    }, 3000);
+                    
                 } else {
-                    console.error('Signup failed:', result.error);
+                    showErrorMessage(result.error);
                 }
             } catch (error) {
                 console.error('Signup error:', error);
+                showErrorMessage('Registration failed. Please try again.');
             }
         });
     }
@@ -84,18 +125,30 @@ setTimeout(() => {
                 console.log('Signup result:', result);
                 
                 if (result.success) {
-                    const redirectUrl = getRedirectUrl('Retailer');
-                    console.log('🚀 Redirecting to:', redirectUrl);
-                    window.location.href = redirectUrl;
+                    // Instead of redirecting to dashboard, show confirmation message
+                    showSuccessMessage(`
+                        ✅ Account created successfully!<br>
+                        📧 Please check your email (<strong>${email}</strong>) and click the confirmation link.<br>
+                        🔒 You'll be able to log in after confirming your email.
+                    `);
+                    
+                    // Optional: Redirect to confirmation page after a delay
+                    setTimeout(() => {
+                        const redirectUrl = getRedirectUrl('Retailer');
+                        console.log('🚀 Redirecting to confirmation page:', redirectUrl);
+                        window.location.href = redirectUrl;
+                    }, 3000);
+                    
                 } else {
-                    console.error('Signup failed:', result.error);
+                    showErrorMessage(result.error);
                 }
             } catch (error) {
                 console.error('Signup error:', error);
+                showErrorMessage('Registration failed. Please try again.');
             }
         });
     }
     
-    console.log('✅ Domain-aware signup handlers ready');
+    console.log('✅ Domain-aware signup handlers with email confirmation ready');
     
 }, 3000);
